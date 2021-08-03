@@ -152,6 +152,10 @@ func (s *ethService) SendTransaction(r *http.Request, args *types.EthArgs, reply
 		"nonce":     args.Nonce,
 		"input":     args.Input,
 		"value":     args.Value,
+		"r":         args.R,
+		"s":         args.S,
+		"hash":      args.Hash,
+		//"param":
 	}
 
 	req, err := xuper.NewInvokeContractRequest(s.account, xuper.Xkernel3Module, "$evm", method, args1)
