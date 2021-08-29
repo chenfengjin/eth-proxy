@@ -13,6 +13,8 @@ import (
 	"github.com/hyperledger/burrow/rpc"
 	"github.com/hyperledger/burrow/txs"
 	"github.com/xuperchain/xuper-sdk-go/v2/account"
+	"google.golang.org/grpc"
+
 	"io"
 	mathRand "math/rand"
 	"strings"
@@ -100,16 +102,26 @@ type ethService struct {
 	account       *account.Account
 }
 
-func NewEthService(xchainClient pb.XchainClient, eventClient pb.EventServiceClient, logger *zap.SugaredLogger) (*ethService, error) {
-	client, err := xuper.New("127.0.0.1:37101")
+func NewEthService(host string, logger *zap.SugaredLogger) (*ethService, error) {
+
+	conn, err := grpc.Dial(host, grpc.WithInsecure(), grpc.WithMaxMsgSize(64<<20-1))
+	if err != nil {
+		return nil, err
+	}
+
+	eventClient := pb.NewEventServiceClient(conn)
+	xchainClient := pb.NewXchainClient(conn)
+	if err != nil {
+		return nil, err
+	}
+	client, err := xuper.New(host)
 	if err != nil {
 		panic("new xuper Client error:")
 	}
 	account, err := account.RetrieveAccount("玉 脸 驱 协 介 跨 尔 籍 杆 伏 愈 即", 1)
 	if err != nil {
-		return nil, errors.New("TODO")
+		return nil, err
 	}
-	fmt.Printf("Address:%v\n", account.Address)
 	contractAccount := "XC1234567890123456@xuper"
 	err = account.SetContractAccount(contractAccount)
 	if err != nil {
@@ -290,88 +302,6 @@ func (s *ethService) SendRawTransaction(r *http.Request, tx *string, reply *stri
 		return err
 	}
 	*reply = hex.EncodeToString(resp.ContractResponse.Body)
-
-	// var txHash []byte
-	// if err = json.Unmarshal(resp.ContractResponse.Body, &txHash); err != nil {
-	// 	return err
-	// }
-	// fmt.Println(txHash)
-	// fmt.Println(hex.EncodeToString(resp.ContractResponse.Body))
-	//data, err := x.DecodeToBytes(*tx)
-	//if err != nil {
-	//	return err
-	//}
-	//
-	//rawTx := new(rpc.RawTx)
-	//err = rlp.Decode(data, rawTx)
-	//if err != nil {
-	//	return err
-	//}
-
-	//net := uint64(chainID)
-	//enc, err := txs.RLPEncode(rawTx.Nonce, rawTx.GasPrice, rawTx.GasLimit, rawTx.To, rawTx.Value, rawTx.Data)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//
-	//sig := crypto.CompressedSignatureFromParams(rawTx.V-net-8-1, rawTx.R, rawTx.S)
-	//pub, err := crypto.PublicKeyFromSignature(sig, crypto.Keccak256(enc))
-	//if err != nil {
-	//	return nil, err
-	//}
-	//from := pub.GetAddress()
-	//unc := crypto.UncompressedSignatureFromParams(rawTx.R, rawTx.S)
-	//signature, err := crypto.SignatureFromBytes(unc, crypto.CurveTypeSecp256k1)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//
-	//to, err := crypto.AddressFromBytes(rawTx.To)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//
-	//amount := balance.WeiToNative(rawTx.Value).Uint64()
-	//
-	//txEnv := &txs.Envelope{
-	//	Signatories: []txs.Signatory{
-	//		{
-	//			Address:   &from,
-	//			PublicKey: pub,
-	//			Signature: signature,
-	//		},
-	//	},
-	//	Encoding: txs.Envelope_RLP,
-	//	Tx: &txs.Tx{
-	//		ChainID: srv.blockchain.ChainID(),
-	//		Payload: &payload.CallTx{
-	//			Input: &payload.TxInput{
-	//				Address: from,
-	//				Amount:  amount,
-	//				// first tx sequence should be 1,
-	//				// but metamask starts at 0
-	//				Sequence: rawTx.Nonce + 1,
-	//			},
-	//			Address:  &to,
-	//			GasLimit: rawTx.GasLimit,
-	//			GasPrice: rawTx.GasPrice,
-	//			Data:     rawTx.Data,
-	//		},
-	//	},
-	//}
-	//
-	//ctx := context.Background()
-	//txe, err := srv.trans.BroadcastTxSync(ctx, txEnv)
-	//if err != nil {
-	//	return nil, err
-	//} else if txe.Exception != nil {
-	//	return nil, txe.Exception.AsError()
-	//}
-	//
-	//return &web3.EthSendRawTransactionResult{
-	//	TransactionHash: x.EncodeBytes(txe.GetTxHash().Bytes()),
-	//}, nil
-
 	return nil
 }
 

@@ -12,10 +12,9 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/xuperchain/xuperchain/service/pb"
-	"github.com/xuperchain/xuperproxy"
 	"go.uber.org/zap"
-	"google.golang.org/grpc"
+
+	"github.com/xuperchain/xuperproxy"
 )
 
 var host string
@@ -42,18 +41,13 @@ var port int
 // Will exit gracefully for errors and signal interrupts
 func runProxy(cmd *cobra.Command, args []string) error {
 
-	xchainClient, eventClient, err := initXchainClient(host)
-	if err != nil {
-		return fmt.Errorf("Failed to create xchainClient: %s\n", err)
-	}
-
 	rawLogger, err := zap.NewDevelopment()
 	if err != nil {
 		return fmt.Errorf("Failed to create logger: %s\n", err)
 	}
 	logger := rawLogger.Named("proxy").Sugar()
 
-	ethService, err := xuperproxy.NewEthService(xchainClient, eventClient, logger)
+	ethService, err := xuperproxy.NewEthService(host, logger)
 	if err != nil {
 		return err
 	}
@@ -116,13 +110,4 @@ func main() {
 	if proxyCmd.Execute() != nil {
 		os.Exit(1)
 	}
-}
-
-func initXchainClient(host string) (pb.XchainClient, pb.EventServiceClient, error) {
-	conn, err := grpc.Dial(host, grpc.WithInsecure(), grpc.WithMaxMsgSize(64<<20-1))
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return pb.NewXchainClient(conn), pb.NewEventServiceClient(conn), nil
 }

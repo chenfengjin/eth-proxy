@@ -3,7 +3,8 @@ package xuperproxy
 import "testing"
 
 func TestSendRawTransaction(t *testing.T) {
-	service, err := NewEthService(nil, nil, nil)
+	host := "127.0.0.1:37101"
+	service, err := NewEthService(host, nil)
 	if err != nil {
 		t.Error(err)
 		return
