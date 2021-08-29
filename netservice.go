@@ -9,7 +9,7 @@ import (
 	"net/http"
 )
 
-const NetworkID = "xuperchain"
+const NetworkID = "1337"
 
 // NetService returns data about the network the client is connected
 // to.
