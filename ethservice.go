@@ -312,7 +312,6 @@ func (s *ethService) SendRawTransaction(r *http.Request, tx *string, reply *stri
 	}
 	resp, err := s.xclient.Do(req)
 	if err != nil {
-		fmt.Println(err)
 		return err
 	}
 	*reply = hex.EncodeToString(resp.ContractResponse.Body)
