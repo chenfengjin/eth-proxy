@@ -247,7 +247,22 @@ func (s *ethService) EstimateGas(r *http.Request, _ *types.EthArgs, reply *strin
 }
 
 func (s *ethService) GetTransactionCount(r *http.Request, _ *interface{}, reply *string) error {
-	*reply = "0x01"
+	method := "GetTransactionCount"
+	args1 := make(map[string]string)
+
+	req, err := xuper.NewInvokeContractRequest(s.account, xuper.Xkernel3Module, "$evm", method, args1)
+	if err != nil {
+		return err
+	}
+	resp, err := s.xclient.PreExecTx(req)
+	if err != nil {
+		return err
+	}
+	count, ok := new(big.Int).SetString((string(resp.ContractResponse.Body)), 10)
+	if !ok {
+		return fmt.Errorf("can not convert %s to int ", string(resp.ContractResponse.Body))
+	}
+	*reply = "0x" + count.Text(16)
 	return nil
 }
 
@@ -287,7 +302,6 @@ func (s *ethService) Call(r *http.Request, args *types.EthArgs, reply *string) e
 	return nil
 }
 func (s *ethService) SendRawTransaction(r *http.Request, tx *string, reply *string) error {
-	//*reply = "0x01"
 	method := "SendRawTransaction"
 	args := map[string]string{
 		"signed_tx": *tx,
