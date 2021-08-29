@@ -252,26 +252,26 @@ func (s *ethService) Call(r *http.Request, args *types.EthArgs, reply *string) e
 	//if err != nil {
 	//	return err
 	//}
-	to := "313131312D2D2D2D2D2D2D2D2D636F756E746572"
-	from := "b60e8dd61c5d32be8058bb8eb970870f07233155"
-	input := "ae896c870000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000678636861696e0000000000000000000000000000000000000000000000000000"
-	method := "ContractCall"
-	args1 := map[string]string{
-		"from":  from,
-		"to":    to,
-		"input": input,
-		//"gas":gas,
-		//"gas_price":gasPrice
-	}
-	req, err := xuper.NewInvokeContractRequest(s.account, xuper.Xkernel3Module, "$evm", method, args1)
-	if err != nil {
-		return err
-	}
-	resp, err := s.xclient.Do(req)
-	if err != nil {
-		return err
-	}
-	fmt.Printf("%s\n", resp.Tx.Txid)
+	// to := "313131312D2D2D2D2D2D2D2D2D636F756E746572"
+	// from := "b60e8dd61c5d32be8058bb8eb970870f07233155"
+	// input := "ae896c870000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000678636861696e0000000000000000000000000000000000000000000000000000"
+	// method := "ContractCall"
+	// args1 := map[string]string{
+	// 	"from":  from,
+	// 	"to":    to,
+	// 	"input": input,
+	// 	//"gas":gas,
+	// 	//"gas_price":gasPrice
+	// }
+	// req, err := xuper.NewInvokeContractRequest(s.account, xuper.Xkernel3Module, "$evm", method, args1)
+	// if err != nil {
+	// 	return err
+	// }
+	// resp, err := s.xclient.Do(req)
+	// if err != nil {
+	// 	return err
+	// }
+	// fmt.Printf("%s\n", resp.Tx.Txid)
 	return nil
 }
 func (s *ethService) SendRawTransaction(r *http.Request, tx *string, reply *string) error {
@@ -280,9 +280,6 @@ func (s *ethService) SendRawTransaction(r *http.Request, tx *string, reply *stri
 	args := map[string]string{
 		"signed_tx": *tx,
 	}
-	//args := map[string]string{
-	//	"signed_tx": "",
-	//}
 	req, err := xuper.NewInvokeContractRequest(s.account, xuper.Xkernel3Module, "$evm", method, args)
 	if err != nil {
 		return err
@@ -292,7 +289,7 @@ func (s *ethService) SendRawTransaction(r *http.Request, tx *string, reply *stri
 		fmt.Println(err)
 		return err
 	}
-	fmt.Println(hex.EncodeToString(resp.ContractResponse.Body))
+	*reply = hex.EncodeToString(resp.ContractResponse.Body)
 
 	// var txHash []byte
 	// if err = json.Unmarshal(resp.ContractResponse.Body, &txHash); err != nil {
