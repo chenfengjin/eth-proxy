@@ -34,4 +34,13 @@ func TestSendRawTransaction(t *testing.T) {
 			return
 		}
 	})
+
+	t.Run("TransactinCount", func(t *testing.T) {
+		var reply string
+		if err := service.GetTransactionCount(nil, nil, &reply); err != nil {
+			t.Error(err)
+		}
+		t.Log(reply)
+
+	})
 }
