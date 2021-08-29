@@ -1,4 +1,4 @@
-package xuperproxy
+package eth_proxy
 
 import (
 	"context"
@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+
 	encoding "github.com/hyperledger/burrow/encoding/hex"
 	"github.com/hyperledger/burrow/encoding/rlp"
 	"github.com/hyperledger/burrow/rpc"
@@ -33,8 +34,8 @@ import (
 	"github.com/xuperchain/xupercore/bcs/contract/evm"
 	"go.uber.org/zap"
 
+	"github.com/xuperchain/eth_proxy/types"
 	"github.com/xuperchain/xuper-sdk-go/v2/xuper"
-	"github.com/xuperchain/xuperproxy/types"
 )
 
 var ZeroAddress = make([]byte, 20)

@@ -1,4 +1,4 @@
-package xuperproxy
+package eth_proxy
 
 import "testing"
 
