@@ -115,8 +115,9 @@ func NewEthService(host string, logger *zap.SugaredLogger) (*ethService, error) 
 		return nil, err
 	}
 	client, err := xuper.New(host)
+
 	if err != nil {
-		panic("new xuper Client error:")
+		return nil, err
 	}
 	account, err := account.RetrieveAccount("玉 脸 驱 协 介 跨 尔 籍 杆 伏 愈 即", 1)
 	if err != nil {
@@ -239,10 +240,9 @@ func (s *ethService) GetTransactionReceipt(r *http.Request, arg *string, reply *
 	return nil
 }
 
+// EstimateGas always return 0
 func (s *ethService) EstimateGas(r *http.Request, _ *types.EthArgs, reply *string) error {
-	//gas := big.NewInt(2) // todo 如果有多个币种？
-	//*reply = fmt.Sprintf("0x%x", gas)
-	*reply = "0x0000000000000000000000000000000000000000000000000000000000000015"
+	*reply = "0x0"
 	return nil
 }
 
