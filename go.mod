@@ -1,4 +1,4 @@
-module github.com/xuperchain/xuperproxy
+module github.com/xuperchain/eth_proxy
 
 go 1.13
 

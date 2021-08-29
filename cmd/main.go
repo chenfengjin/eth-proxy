@@ -14,7 +14,7 @@ import (
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
 
-	"github.com/xuperchain/xuperproxy"
+	"github.com/xuperchain/eth_proxy"
 )
 
 var host string
@@ -47,12 +47,12 @@ func runProxy(cmd *cobra.Command, args []string) error {
 	}
 	logger := rawLogger.Named("proxy").Sugar()
 
-	ethService, err := xuperproxy.NewEthService(host, logger)
+	ethService, err := eth_proxy.NewEthService(host, logger)
 	if err != nil {
 		return err
 	}
 
-	proxy := xuperproxy.NewEthereumProxy(ethService, port)
+	proxy := eth_proxy.NewEthereumProxy(ethService, port)
 
 	errChan := make(chan error, 1)
 	go func() {
