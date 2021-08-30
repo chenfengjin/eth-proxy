@@ -32,7 +32,6 @@ import (
 
 	"github.com/xuperchain/xuperchain/service/pb"
 	"github.com/xuperchain/xupercore/bcs/contract/evm"
-	"go.uber.org/zap"
 
 	"github.com/xuperchain/eth_proxy/types"
 	"github.com/xuperchain/xuper-sdk-go/v2/xuper"
@@ -102,30 +101,31 @@ type ethService struct {
 	filterSeq     uint64
 	account       *account.Account
 }
+type EthServiceConfig struct {
+	Host            string
+	ContractAccount string
+	KeyPath         string
+}
 
-func NewEthService(host string, logger *zap.SugaredLogger) (*ethService, error) {
+func NewEthService(config *EthServiceConfig) (*ethService, error) {
 
-	conn, err := grpc.Dial(host, grpc.WithInsecure(), grpc.WithMaxMsgSize(64<<20-1))
+	conn, err := grpc.Dial(config.Host, grpc.WithInsecure(), grpc.WithMaxMsgSize(64<<20-1))
 	if err != nil {
 		return nil, err
 	}
 
 	eventClient := pb.NewEventServiceClient(conn)
 	xchainClient := pb.NewXchainClient(conn)
-	if err != nil {
-		return nil, err
-	}
-	client, err := xuper.New(host)
+	client, err := xuper.New(config.Host)
 
 	if err != nil {
 		return nil, err
 	}
-	account, err := account.RetrieveAccount("玉 脸 驱 协 介 跨 尔 籍 杆 伏 愈 即", 1)
+	account, err := account.GetAccountFromPlainFile(config.KeyPath)
 	if err != nil {
 		return nil, err
 	}
-	contractAccount := "XC1234567890123456@xuper"
-	err = account.SetContractAccount(contractAccount)
+	err = account.SetContractAccount(config.ContractAccount)
 	if err != nil {
 		return nil, err
 	}
@@ -152,34 +152,33 @@ func NewEthService(host string, logger *zap.SugaredLogger) (*ethService, error) 
 //	return nil
 //}
 func (s *ethService) SendTransaction(r *http.Request, args *types.EthArgs, reply *string) error {
-	*reply = "0x0111111"
-
-	method := "SendRawTransaction"
-	args1 := map[string]string{
-		"from":      args.From,
-		"to":        args.To,
-		"gas":       args.Gas,
-		"gas_price": args.GasPrice,
-		"nonce":     args.Nonce,
-		"input":     args.Input,
-		"value":     args.Value,
-		"r":         args.R,
-		"s":         args.S,
-		"hash":      args.Hash,
-		//"param":
-	}
-
-	req, err := xuper.NewInvokeContractRequest(s.account, xuper.Xkernel3Module, "$evm", method, args1)
-	if err != nil {
-		return err
-	}
-	resp, err := s.xclient.Do(req)
-	if err != nil {
-		return err
-	}
-	if resp.ContractResponse.Status > 400 {
-		return errors.New("TODO1")
-	}
+	// *reply = "0x0111111"
+	//
+	// method := "SendRawTransaction"
+	// args1 := map[string]string{
+	// 	"from":      args.From,
+	// 	"to":        args.To,
+	// 	"gas":       args.Gas,
+	// 	"gas_price": args.GasPrice,
+	// 	"nonce":     args.Nonce,
+	// 	"input":     args.Input,
+	// 	"value":     args.Value,
+	// 	"r":         args.R,
+	// 	"s":         args.S,
+	// 	"hash":      args.Hash,
+	// }
+	//
+	// req, err := xuper.NewInvokeContractRequest(s.account, xuper.Xkernel3Module, "$evm", method, args1)
+	// if err != nil {
+	// 	return err
+	// }
+	// resp, err := s.xclient.Do(req)
+	// if err != nil {
+	// 	return err
+	// }
+	// if resp.ContractResponse.Status > 400 {
+	// 	return errors.New("TODO1")
+	// }
 	return nil
 }
 
@@ -270,10 +269,6 @@ func (s *ethService) GetTransactionCount(r *http.Request, _ *interface{}, reply 
 type logger struct {
 }
 
-//func (l *logger) Log(keyvals ...interface{}) error {
-//fmt.Println(keyvals)
-//return nil
-//}
 func (s *ethService) Call(r *http.Request, args *types.EthArgs, reply *string) error {
 	//l := logging.NewLogger(&logger{})
 	//packed, _, err := abi.EncodeFunctionCall(string(rpc.Abi_HelloWorld), "Hello", l)
@@ -307,7 +302,7 @@ func (s *ethService) SendRawTransaction(r *http.Request, tx *string, reply *stri
 	args := map[string]string{
 		"signed_tx": *tx,
 	}
-	req, err := xuper.NewInvokeContractRequest(s.account, xuper.Xkernel3Module, "$evm", method, args)
+	req, err := xuper.NewInvokeContractRequest(s.account, xuper.Xkernel3Module, "$evm", method, args, xuper.WithFee("5000000"))
 	if err != nil {
 		return err
 	}
@@ -315,6 +310,7 @@ func (s *ethService) SendRawTransaction(r *http.Request, tx *string, reply *stri
 	if err != nil {
 		return err
 	}
+
 	*reply = hex.EncodeToString(resp.ContractResponse.Body)
 	return nil
 }
@@ -345,7 +341,7 @@ func (s *ethService) GetBalance(r *http.Request, p *[]string, reply *string) err
 	if err != nil {
 		return err
 	}
-	resp, err := s.xclient.Do(req)
+	resp, err := s.xclient.PreExecTx(req)
 	if err != nil {
 		return err
 	}

@@ -3,8 +3,11 @@ package eth_proxy
 import "testing"
 
 func TestSendRawTransaction(t *testing.T) {
-	host := "127.0.0.1:37101"
-	service, err := NewEthService(host, nil)
+	service, err := NewEthService(&EthServiceConfig{
+		Host:            "127.0.0.1:37101",
+		ContractAccount: "XC1111111111111111@xuper",
+		KeyPath:         "data/keys",
+	})
 	if err != nil {
 		t.Error(err)
 		return
@@ -40,7 +43,7 @@ func TestSendRawTransaction(t *testing.T) {
 		if err := service.GetTransactionCount(nil, nil, &reply); err != nil {
 			t.Error(err)
 		}
-		t.Log(reply)
+		// t.Log(reply)
 
 	})
 }
