@@ -19,6 +19,8 @@ import (
 
 var host string
 var port int
+var account string
+var keyPath string
 
 // InitFlags sets up the flags and environment variables for Proxy
 //func initFlags() {
@@ -47,7 +49,11 @@ func runProxy(cmd *cobra.Command, args []string) error {
 	}
 	logger := rawLogger.Named("proxy").Sugar()
 
-	ethService, err := eth_proxy.NewEthService(host, logger)
+	ethService, err := eth_proxy.NewEthService(&eth_proxy.EthServiceConfig{
+		Host:            host,
+		ContractAccount: account,
+		KeyPath:         keyPath,
+	})
 	if err != nil {
 		return err
 	}
@@ -84,7 +90,7 @@ func main() {
 	var proxyCmd = &cobra.Command{
 		Use:   "proxy",
 		Short: "proxy is a web3 provider used to interact with the EVM chaincode on a XuperChain Network. The flags provided will be honored over the corresponding environment variables.",
-		Long:  "proxy is a web3 provider used to interact with the EVM chaincode on a Fabric Network. The flags provided will be honored over the corresponding environment variables.",
+		Long:  "proxy is a web3 provider used to interact with the EVM chaincode on a XuperChain Network. The flags provided will be honored over the corresponding environment variables.",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 
@@ -97,16 +103,22 @@ func main() {
 	viper.SetEnvPrefix("PROXY")
 	viper.BindEnv("host")
 	viper.BindEnv("port")
+	viper.BindEnv("account")
 
 	proxyCmd.PersistentFlags().StringVarP(&host, "host", "t", "127.0.0.1:37101",
 		"Path to a compatible Fabric SDK Go config file. This flag is required if PROXY_HOST is not set.")
 	viper.BindPFlag("config", proxyCmd.PersistentFlags().Lookup("host"))
 
-	//Port defaults to 5000 if PORT is not set or `-p,-port` is not provided
 	proxyCmd.PersistentFlags().IntVarP(&port, "port", "p", 8545,
 		"Port that Proxy will be running on. The listening port can also be set by the PROXY_PORT environment variable.")
 	viper.BindPFlag("port", proxyCmd.PersistentFlags().Lookup("port"))
-	fmt.Printf("listen at %d\n", port)
+
+	proxyCmd.PersistentFlags().StringVar(&account, "account", "XC1234567890123456@xuper", "account to send transaction")
+	viper.BindPFlag("account", proxyCmd.PersistentFlags().Lookup("account"))
+
+	proxyCmd.PersistentFlags().StringVar(&keyPath, "key", "data/keys", "key path")
+	viper.BindPFlag("key", proxyCmd.PersistentFlags().Lookup("key"))
+
 	if proxyCmd.Execute() != nil {
 		os.Exit(1)
 	}
