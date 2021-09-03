@@ -25,4 +25,6 @@ web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'))
     .on('receipt', console.log);
 
 
-// 合约调用
+// GetBalance
+account = "0x77A8B3C01ab8e408371a5583194D14236858b9c3"
+web3.eth.getba
