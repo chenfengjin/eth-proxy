@@ -307,8 +307,6 @@ func (s *ethService) SendRawTransaction(r *http.Request, tx *string, reply *stri
 }
 
 func (s *ethService) GetBalance(r *http.Request, p *[]string, reply *string) error {
-	*reply = "1000"
-	return nil
 	params := *p
 	if len(params) != 2 {
 		return fmt.Errorf("need 2 params, got %q", len(params))
